@@ -24,3 +24,10 @@ def test_build_suite_returns_named_benchmark() -> None:
 def test_provider_setup_message_includes_large_model_guidance() -> None:
     provider = build_provider("ollama", "qwen3.5:35b-a3b")
     assert "qwen3.5:35b-a3b" in provider.setup_message()
+
+
+def test_mlx_setup_message_mentions_supported_large_models() -> None:
+    provider = build_provider("mlx", "mlx-community/Qwen3.5-35B-A3B-8bit")
+    message = provider.setup_message()
+    assert "Qwen3.5-35B-A3B-8bit" in message
+    assert "gpt-oss-120b-MXFP4-Q4" in message

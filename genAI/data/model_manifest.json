@@ -1,36 +1,87 @@
 {
-  "baseline_large_model_family": "Qwen3.5-35B-A3B",
-  "providers": {
-    "jax": {
-      "model_family": "Qwen3.5-35B-A3B",
-      "recommended_model": "Qwen/Qwen3.5-35B-A3B-FP8",
-      "format": "fp8",
-      "source": "https://huggingface.co/Qwen/Qwen3.5-35B-A3B-FP8",
-      "notes": [
-        "Use the official FP8 Hugging Face checkpoint for JAX or HF-style workflows.",
-        "This is the canonical reference artifact for the large-model baseline."
-      ]
+  "default_family": "qwen3.5-35b-a3b",
+  "families": {
+    "qwen3.5-35b-a3b": {
+      "display_name": "Qwen3.5-35B-A3B",
+      "providers": {
+        "jax": {
+          "recommended_model": "Qwen/Qwen3.5-35B-A3B-FP8",
+          "format": "fp8",
+          "source": "https://huggingface.co/Qwen/Qwen3.5-35B-A3B-FP8",
+          "notes": [
+            "Use the official FP8 Hugging Face checkpoint for JAX or HF-style workflows.",
+            "This is the canonical reference artifact for the Qwen large-model baseline."
+          ]
+        },
+        "mlx": {
+          "recommended_model": "mlx-community/Qwen3.5-35B-A3B-8bit",
+          "format": "mlx-8bit",
+          "source": "https://huggingface.co/mlx-community/Qwen3.5-35B-A3B-8bit",
+          "notes": [
+            "Use the MLX community conversion for local Apple Silicon benchmarking.",
+            "This is a practical MLX-native equivalent of the same Qwen model family, not identical FP8 weights."
+          ]
+        },
+        "llamacpp": {
+          "recommended_model": "bartowski/Qwen_Qwen3.5-35B-A3B-GGUF",
+          "format": "gguf",
+          "source": "https://huggingface.co/bartowski/Qwen_Qwen3.5-35B-A3B-GGUF",
+          "notes": [
+            "Use a GGUF quantization from this repository for llama.cpp runs.",
+            "Pick a quant level that fits the target machine and record the exact file name in benchmark metadata."
+          ]
+        },
+        "ollama": {
+          "recommended_model": "qwen3.5:35b-a3b",
+          "format": "ollama-managed",
+          "source": "https://ollama.com/library/qwen3.5:35b-a3b",
+          "notes": [
+            "Use the hosted local Ollama model for large-model benchmarks.",
+            "Record the Ollama tag and local runtime version for reproducibility."
+          ]
+        }
+      }
     },
-    "llamacpp": {
-      "model_family": "Qwen3.5-35B-A3B",
-      "recommended_model": "bartowski/Qwen_Qwen3.5-35B-A3B-GGUF",
-      "format": "gguf",
-      "source": "https://huggingface.co/bartowski/Qwen_Qwen3.5-35B-A3B-GGUF",
-      "notes": [
-        "Use a GGUF quantization from this repository for llama.cpp runs.",
-        "Pick a quant level that fits the target machine and record the exact file name in benchmark metadata."
-      ]
-    },
-    "ollama": {
-      "model_family": "Qwen3.5-35B-A3B",
-      "recommended_model": "qwen3.5:35b-a3b",
-      "format": "ollama-managed",
-      "source": "https://ollama.com/library/qwen3.5:35b-a3b",
-      "notes": [
-        "Use the hosted local Ollama model for large-model benchmarks.",
-        "Record the Ollama tag and local runtime version for reproducibility."
-      ]
+    "gpt-oss-120b": {
+      "display_name": "gpt-oss-120b",
+      "providers": {
+        "jax": {
+          "recommended_model": "openai/gpt-oss-120b",
+          "format": "mxfp4",
+          "source": "https://huggingface.co/openai/gpt-oss-120b",
+          "notes": [
+            "Use the official OpenAI open-weight checkpoint for HF-style or JAX-adjacent workflows.",
+            "This model requires the harmony response format according to the official model card."
+          ]
+        },
+        "mlx": {
+          "recommended_model": "mlx-community/gpt-oss-120b-MXFP4-Q4",
+          "format": "mlx-mxfp4-q4",
+          "source": "https://huggingface.co/mlx-community/gpt-oss-120b-MXFP4-Q4",
+          "notes": [
+            "Use the MLX community conversion derived from openai/gpt-oss-120b.",
+            "This is the MLX-native large-model choice for local Apple Silicon experiments."
+          ]
+        },
+        "llamacpp": {
+          "recommended_model": "bartowski/openai_gpt-oss-120b-GGUF",
+          "format": "gguf",
+          "source": "https://huggingface.co/bartowski/openai_gpt-oss-120b-GGUF",
+          "notes": [
+            "Use the GGUF quantization family for llama.cpp.",
+            "The bartowski page recommends the MXFP4_MOE file for gpt-oss-120b."
+          ]
+        },
+        "ollama": {
+          "recommended_model": "gpt-oss:120b",
+          "format": "ollama-managed-mxfp4",
+          "source": "https://ollama.com/library/gpt-oss",
+          "notes": [
+            "Use the Ollama-hosted 120B tag for local benchmarking.",
+            "Ollama states it supports the MXFP4 format natively for gpt-oss."
+          ]
+        }
+      }
     }
   }
 }
-

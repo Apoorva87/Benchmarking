@@ -112,12 +112,25 @@ This is a strong complement to speed because a fast provider is only useful if i
 - `mlx`, `jax`, and `llama.cpp` can use the helper scripts in `scripts/` to pull Hugging Face assets locally.
 - `ollama` and `lmstudio` typically require a hosted local model endpoint first. Use `python -m genAI.cli provider-info --provider <name> --model <model>` to see the expected setup message.
 
-## Current large-model mapping
+## Current large-model mappings
 
-For the shared 20B to 30B+ benchmarking track, this repo now standardizes on the `Qwen3.5-35B-A3B` family and maps it like this:
+The repo now tracks two concrete large-model families:
+
+- `Qwen3.5-35B-A3B`
+- `gpt-oss-120b`
+
+For `Qwen3.5-35B-A3B`, the current provider mapping is:
 
 - `jax`: `Qwen/Qwen3.5-35B-A3B-FP8`
+- `mlx`: `mlx-community/Qwen3.5-35B-A3B-8bit`
 - `llama.cpp`: `bartowski/Qwen_Qwen3.5-35B-A3B-GGUF`
 - `ollama`: `qwen3.5:35b-a3b`
+
+For `gpt-oss-120b`, the current provider mapping is:
+
+- `jax`: `openai/gpt-oss-120b`
+- `mlx`: `mlx-community/gpt-oss-120b-MXFP4-Q4`
+- `llama.cpp`: `bartowski/openai_gpt-oss-120b-GGUF`
+- `ollama`: `gpt-oss:120b`
 
 The exact mapping is tracked in [genAI/data/model_manifest.json](/Users/akarnik/experiments/Benchmarking/genAI/data/model_manifest.json).
