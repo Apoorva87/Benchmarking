@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "local-genai-benchmarking"
+version = "0.1.0"
+description = "Modular local benchmarking framework for LLMs, VLMs, and future image generation models."
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+genai-bench = "genAI.cli:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["genAI*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

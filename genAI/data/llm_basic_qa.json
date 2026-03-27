@@ -1,0 +1,13 @@
+[
+  {
+    "sample_id": "qa-1",
+    "prompt": "Answer with one word: What is the capital of France?",
+    "expected_answer": "Paris"
+  },
+  {
+    "sample_id": "qa-2",
+    "prompt": "Answer with one word: Which planet is known as the Red Planet?",
+    "expected_answer": "Mars"
+  }
+]
+

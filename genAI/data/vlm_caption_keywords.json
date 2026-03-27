@@ -1,0 +1,15 @@
+[
+  {
+    "sample_id": "vision-1",
+    "prompt": "Describe the main objects you see in the image.",
+    "image_paths": ["fixtures/sample_receipt.png"],
+    "expected_keywords": ["receipt", "text"]
+  },
+  {
+    "sample_id": "vision-2",
+    "prompt": "What is the likely scene shown in this image?",
+    "image_paths": ["fixtures/sample_dashboard.png"],
+    "expected_keywords": ["screen", "chart"]
+  }
+]
+
