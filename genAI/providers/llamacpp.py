@@ -17,6 +17,7 @@ class LlamaCppProvider(TextGenerationProvider):
     def setup_message(self) -> str:
         return (
             f"llama.cpp expects a local GGUF model for '{self.model_name}'. "
-            "Use `python scripts/download_hf_model.py --provider llamacpp --model-id <hf-model-id>` to download local assets."
+            "Recommended large-model artifact: `bartowski/Qwen_Qwen3.5-35B-A3B-GGUF` "
+            "(https://huggingface.co/bartowski/Qwen_Qwen3.5-35B-A3B-GGUF). "
+            "Use `python scripts/download_hf_model.py --provider llamacpp --model-id bartowski/Qwen_Qwen3.5-35B-A3B-GGUF` to download local assets."
         )
-

@@ -21,5 +21,7 @@ class OllamaProvider(TextGenerationProvider, VisionLanguageProvider):
     def setup_message(self) -> str:
         return (
             f"Ollama expects the model '{self.model_name}' to be available locally and hosted by Ollama. "
+            "Recommended large-model tag: `qwen3.5:35b-a3b` "
+            "(https://ollama.com/library/qwen3.5:35b-a3b). "
             f"Typical setup: `ollama pull {self.model_name}` and then run prompts against the local Ollama service."
         )

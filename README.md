@@ -60,6 +60,12 @@ python -m genAI.cli run --provider ollama --model llama3.2 --suite basic-qa
 python -m genAI.cli provider-info --provider ollama --model llama3.2
 ```
 
+5. Review the checked-in model mapping for large-model runs:
+
+```bash
+cat genAI/data/model_manifest.json
+```
+
 ## What is implemented now
 
 - Shared benchmark and scoring primitives
@@ -105,3 +111,13 @@ This is a strong complement to speed because a fast provider is only useful if i
 
 - `mlx`, `jax`, and `llama.cpp` can use the helper scripts in `scripts/` to pull Hugging Face assets locally.
 - `ollama` and `lmstudio` typically require a hosted local model endpoint first. Use `python -m genAI.cli provider-info --provider <name> --model <model>` to see the expected setup message.
+
+## Current large-model mapping
+
+For the shared 20B to 30B+ benchmarking track, this repo now standardizes on the `Qwen3.5-35B-A3B` family and maps it like this:
+
+- `jax`: `Qwen/Qwen3.5-35B-A3B-FP8`
+- `llama.cpp`: `bartowski/Qwen_Qwen3.5-35B-A3B-GGUF`
+- `ollama`: `qwen3.5:35b-a3b`
+
+The exact mapping is tracked in [genAI/data/model_manifest.json](/Users/akarnik/experiments/Benchmarking/genAI/data/model_manifest.json).

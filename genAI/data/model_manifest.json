@@ -1,0 +1,36 @@
+{
+  "baseline_large_model_family": "Qwen3.5-35B-A3B",
+  "providers": {
+    "jax": {
+      "model_family": "Qwen3.5-35B-A3B",
+      "recommended_model": "Qwen/Qwen3.5-35B-A3B-FP8",
+      "format": "fp8",
+      "source": "https://huggingface.co/Qwen/Qwen3.5-35B-A3B-FP8",
+      "notes": [
+        "Use the official FP8 Hugging Face checkpoint for JAX or HF-style workflows.",
+        "This is the canonical reference artifact for the large-model baseline."
+      ]
+    },
+    "llamacpp": {
+      "model_family": "Qwen3.5-35B-A3B",
+      "recommended_model": "bartowski/Qwen_Qwen3.5-35B-A3B-GGUF",
+      "format": "gguf",
+      "source": "https://huggingface.co/bartowski/Qwen_Qwen3.5-35B-A3B-GGUF",
+      "notes": [
+        "Use a GGUF quantization from this repository for llama.cpp runs.",
+        "Pick a quant level that fits the target machine and record the exact file name in benchmark metadata."
+      ]
+    },
+    "ollama": {
+      "model_family": "Qwen3.5-35B-A3B",
+      "recommended_model": "qwen3.5:35b-a3b",
+      "format": "ollama-managed",
+      "source": "https://ollama.com/library/qwen3.5:35b-a3b",
+      "notes": [
+        "Use the hosted local Ollama model for large-model benchmarks.",
+        "Record the Ollama tag and local runtime version for reproducibility."
+      ]
+    }
+  }
+}
+

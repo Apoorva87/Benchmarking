@@ -19,3 +19,8 @@ def test_build_provider_returns_named_backend() -> None:
 def test_build_suite_returns_named_benchmark() -> None:
     suite = build_suite("basic-qa")
     assert suite.name == "basic-qa"
+
+
+def test_provider_setup_message_includes_large_model_guidance() -> None:
+    provider = build_provider("ollama", "qwen3.5:35b-a3b")
+    assert "qwen3.5:35b-a3b" in provider.setup_message()
