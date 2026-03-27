@@ -66,6 +66,12 @@ python -m genAI.cli provider-info --provider ollama --model llama3.2
 cat genAI/data/model_manifest.json
 ```
 
+6. Download repo-local model assets:
+
+```bash
+python scripts/download_hf_model.py --provider llamacpp --model-id bartowski/Qwen_Qwen3.5-35B-A3B-GGUF
+```
+
 ## What is implemented now
 
 - Shared benchmark and scoring primitives
@@ -111,6 +117,7 @@ This is a strong complement to speed because a fast provider is only useful if i
 
 - `mlx`, `jax`, and `llama.cpp` can use the helper scripts in `scripts/` to pull Hugging Face assets locally.
 - `ollama` and `lmstudio` typically require a hosted local model endpoint first. Use `python -m genAI.cli provider-info --provider <name> --model <model>` to see the expected setup message.
+- Downloaded model files are stored under the repo-local `models/` directory and ignored by git.
 
 ## Current large-model mappings
 
