@@ -9,15 +9,26 @@ from genAI.suites.registry import build_suite, list_suites
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run local GenAI benchmarks.")
-    parser.add_argument("--provider", required=True, choices=list_provider_factories())
-    parser.add_argument("--model", required=True, help="Model name for the provider backend.")
-    parser.add_argument("--suite", required=True, choices=list_suites())
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    run_parser = subparsers.add_parser("run", help="Run a benchmark suite.")
+    run_parser.add_argument("--provider", required=True, choices=list_provider_factories())
+    run_parser.add_argument("--model", required=True, help="Model name for the provider backend.")
+    run_parser.add_argument("--suite", required=True, choices=list_suites())
+
+    info_parser = subparsers.add_parser("provider-info", help="Show setup information for a provider.")
+    info_parser.add_argument("--provider", required=True, choices=list_provider_factories())
+    info_parser.add_argument("--model", required=True, help="Model name for the provider backend.")
     return parser
 
 
 def main() -> None:
     args = build_parser().parse_args()
     provider = build_provider(args.provider, args.model)
+    if args.command == "provider-info":
+        print(provider.setup_message())
+        return
+
     suite = build_suite(args.suite)
     results = suite.run(provider)
     aggregate = EvaluationRunner().aggregate(results)
@@ -26,8 +37,16 @@ def main() -> None:
         f"model={aggregate.model_name} modality={aggregate.modality} "
         f"avg_score={aggregate.average_score:.2f} avg_latency={aggregate.average_latency_seconds:.4f}s"
     )
+    for result in results:
+        if "token_generation_rate" in result.metadata:
+            print(
+                f"sample={result.sample_id} size={result.metadata.get('prompt_size')} "
+                f"ttft={result.metadata.get('time_to_first_token_seconds'):.4f}s "
+                f"tok_s={result.metadata.get('token_generation_rate'):.2f} "
+                f"total={result.metadata.get('total_duration_seconds'):.4f}s "
+                f"tokens={result.metadata.get('output_token_count')}"
+            )
 
 
 if __name__ == "__main__":
     main()
-

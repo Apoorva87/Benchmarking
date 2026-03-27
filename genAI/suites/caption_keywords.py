@@ -3,9 +3,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from genAI.benchmarks.base import BenchmarkExecution
 from genAI.benchmarks.vlm import VLMBenchmark, VisionSample
 from genAI.providers.base import VisionLanguageProvider
-from genAI.scoring.models import ScoreBreakdown
 from genAI.scoring.standard import keyword_coverage_score
 
 
@@ -22,8 +22,7 @@ class CaptionKeywordBenchmark(VLMBenchmark):
     def samples(self) -> list[VisionSample]:
         return self._samples
 
-    def run_sample(self, provider: VisionLanguageProvider, sample: VisionSample) -> tuple[str, ScoreBreakdown]:
+    def run_sample(self, provider: VisionLanguageProvider, sample: VisionSample) -> BenchmarkExecution:
         response = provider.generate_vision_text(sample.prompt, sample.image_paths)
         score = keyword_coverage_score(sample.expected_keywords, response)
-        return response, score
-
+        return BenchmarkExecution(response=response, score=score)

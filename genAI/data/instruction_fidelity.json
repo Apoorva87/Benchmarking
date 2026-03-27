@@ -1,0 +1,29 @@
+[
+  {
+    "sample_id": "fidelity-1",
+    "prompt": "Answer with exactly one word: blue",
+    "expected_answer": "",
+    "metadata": {
+      "expected_keywords": ["blue"],
+      "max_words": 1
+    }
+  },
+  {
+    "sample_id": "fidelity-2",
+    "prompt": "Return a JSON object with keys status and provider. Use concise values.",
+    "expected_answer": "",
+    "metadata": {
+      "required_json_keys": ["status", "provider"]
+    }
+  },
+  {
+    "sample_id": "fidelity-3",
+    "prompt": "In no more than 12 words, explain why token throughput matters.",
+    "expected_answer": "",
+    "metadata": {
+      "expected_keywords": ["token", "throughput"],
+      "max_words": 12
+    }
+  }
+]
+

@@ -1,0 +1,21 @@
+[
+  {
+    "sample_id": "speed-small",
+    "size_label": "small",
+    "prompt": "Summarize why local model benchmarking matters in one short paragraph.",
+    "max_new_tokens": 64
+  },
+  {
+    "sample_id": "speed-medium",
+    "size_label": "medium",
+    "prompt": "Write a structured explanation of how you would compare two local inference providers on latency, throughput, instruction following, memory use, and deployment ergonomics. Keep the explanation practical and oriented toward engineering tradeoffs.",
+    "max_new_tokens": 128
+  },
+  {
+    "sample_id": "speed-large",
+    "size_label": "large",
+    "prompt": "Produce a detailed benchmarking plan for local generative AI systems that covers prompt selection, repeatability, warmup runs, sampling controls, concurrency limits, provider-specific model loading, system metrics, output quality checks, multimodal extensibility, and report generation. Include implementation caveats, expected failure modes, and operator guidance for rerunning tests on new models.",
+    "max_new_tokens": 256
+  }
+]
+

@@ -18,3 +18,8 @@ class OllamaProvider(TextGenerationProvider, VisionLanguageProvider):
         image_count = len(image_paths)
         return f"[ollama:{self.model_name}:images={image_count}] {prompt}"
 
+    def setup_message(self) -> str:
+        return (
+            f"Ollama expects the model '{self.model_name}' to be available locally and hosted by Ollama. "
+            f"Typical setup: `ollama pull {self.model_name}` and then run prompts against the local Ollama service."
+        )

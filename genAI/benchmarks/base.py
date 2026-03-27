@@ -35,6 +35,13 @@ class BenchmarkResult:
     metadata: dict[str, Any] = field(default_factory=dict)
 
 
+@dataclass
+class BenchmarkExecution:
+    response: Any
+    score: ScoreBreakdown
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+
 SampleT = TypeVar("SampleT", bound=BenchmarkSample)
 ProviderT = TypeVar("ProviderT")
 
@@ -52,8 +59,8 @@ class Benchmark(ABC, Generic[SampleT, ProviderT]):
         """Return the benchmark samples."""
 
     @abstractmethod
-    def run_sample(self, provider: ProviderT, sample: SampleT) -> tuple[Any, ScoreBreakdown]:
-        """Execute one sample and return a response plus standardized score."""
+    def run_sample(self, provider: ProviderT, sample: SampleT) -> BenchmarkExecution:
+        """Execute one sample and return a response, standardized score, and metadata."""
 
     def run(self, provider: ProviderT) -> list[BenchmarkResult]:
         results: list[BenchmarkResult] = []
@@ -61,7 +68,7 @@ class Benchmark(ABC, Generic[SampleT, ProviderT]):
         model_name = getattr(provider, "model_name", "unknown")
         for sample in self.samples():
             started_at = perf_counter()
-            response, score = self.run_sample(provider, sample)
+            execution = self.run_sample(provider, sample)
             latency_seconds = perf_counter() - started_at
             results.append(
                 BenchmarkResult(
@@ -70,10 +77,10 @@ class Benchmark(ABC, Generic[SampleT, ProviderT]):
                     model_name=model_name,
                     modality=self.modality,
                     sample_id=sample.sample_id,
-                    response=response,
-                    score=score,
+                    response=execution.response,
+                    score=execution.score,
                     latency_seconds=latency_seconds,
-                    metadata=sample.metadata,
+                    metadata={**sample.metadata, **execution.metadata},
                 )
             )
         return results

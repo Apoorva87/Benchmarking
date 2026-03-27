@@ -7,7 +7,7 @@ The initial design supports:
 - LLM benchmarking for text generation tasks
 - VLM benchmarking for text-plus-image reasoning tasks
 - Future image generation benchmarking for prompt-to-image evaluation
-- Provider adapters for Ollama, MLX, LM Studio, and future runtimes
+- Provider adapters for Ollama, MLX, LM Studio, JAX, llama.cpp, and future runtimes
 
 ## Design goals
 
@@ -27,6 +27,7 @@ genAI/
   scoring/            Standard score objects and utilities
   suites/             Ready-to-run benchmark suites
   cli.py              Simple command line entrypoint
+scripts/              Helper scripts for model download and setup
 tests/                Unit tests for framework behavior
 docs/                 Architecture notes and future roadmap
 ```
@@ -50,17 +51,26 @@ pytest
 3. Execute an example benchmark:
 
 ```bash
-python -m genAI.cli --provider ollama --model llama3.2 --suite basic-qa
+python -m genAI.cli run --provider ollama --model llama3.2 --suite basic-qa
+```
+
+4. Inspect provider-specific setup notes:
+
+```bash
+python -m genAI.cli provider-info --provider ollama --model llama3.2
 ```
 
 ## What is implemented now
 
 - Shared benchmark and scoring primitives
-- Provider base classes for text, vision, and image generation
-- Initial adapters for Ollama, MLX, and LM Studio
+- Provider base classes for text, vision, image generation, and performance measurement
+- Initial adapters for Ollama, MLX, LM Studio, JAX, and llama.cpp
 - Example LLM suite using QA-style prompts
 - Example VLM suite using image-aware prompts and metadata fixtures
+- Token generation performance benchmarks with small, medium, and large prompts
+- Instruction fidelity benchmarks covering exact answers, JSON formatting, and constraint following
 - Execution engine that normalizes results across benchmark types
+- Setup helper scripts for Hugging Face model download workflows
 
 ## Planned next steps
 
@@ -70,3 +80,28 @@ python -m genAI.cli --provider ollama --model llama3.2 --suite basic-qa
 - Add dataset packs and report export formats
 - Add provider health checks and batch execution
 
+## Benchmark categories
+
+### 1. Token generation performance
+
+This category sends small, medium, and large prompts through each provider and records:
+
+- time to first token
+- token generation rate
+- total completion time
+
+### 2. Instruction fidelity
+
+This category checks whether a provider follows constraints reliably, such as:
+
+- exact short answers
+- required keywords
+- JSON-like structured output
+- maximum word count or response shape constraints
+
+This is a strong complement to speed because a fast provider is only useful if it also follows the prompt correctly.
+
+## Provider setup notes
+
+- `mlx`, `jax`, and `llama.cpp` can use the helper scripts in `scripts/` to pull Hugging Face assets locally.
+- `ollama` and `lmstudio` typically require a hosted local model endpoint first. Use `python -m genAI.cli provider-info --provider <name> --model <model>` to see the expected setup message.

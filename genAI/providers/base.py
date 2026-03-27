@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from time import perf_counter
 
 
 @dataclass(frozen=True)
@@ -9,6 +10,17 @@ class ProviderCapabilities:
     text: bool = False
     vision: bool = False
     image_generation: bool = False
+
+
+@dataclass
+class GenerationMetrics:
+    prompt_char_count: int
+    output_token_count: int
+    time_to_first_token_seconds: float
+    token_generation_rate: float
+    total_duration_seconds: float
+    response_text: str
+    metric_notes: list[str]
 
 
 class BaseProvider(ABC):
@@ -21,11 +33,33 @@ class BaseProvider(ABC):
         self.model_name = model_name
         self.capabilities = capabilities
 
+    def setup_message(self) -> str:
+        return "No provider-specific setup notes are registered yet."
+
 
 class TextGenerationProvider(BaseProvider, ABC):
     @abstractmethod
     def generate_text(self, prompt: str, **kwargs: object) -> str:
         """Generate a text response for a prompt."""
+
+    def measure_text_generation(self, prompt: str, **kwargs: object) -> GenerationMetrics:
+        started_at = perf_counter()
+        response_text = self.generate_text(prompt, **kwargs)
+        total_duration_seconds = perf_counter() - started_at
+        output_token_count = max(len(response_text.split()), 1)
+        token_generation_rate = output_token_count / max(total_duration_seconds, 1e-9)
+        return GenerationMetrics(
+            prompt_char_count=len(prompt),
+            output_token_count=output_token_count,
+            time_to_first_token_seconds=total_duration_seconds,
+            token_generation_rate=token_generation_rate,
+            total_duration_seconds=total_duration_seconds,
+            response_text=response_text,
+            metric_notes=[
+                "Fallback metric path used because token streaming is not implemented for this provider yet.",
+                "Time to first token is approximated as total duration in fallback mode.",
+            ],
+        )
 
 
 class VisionLanguageProvider(BaseProvider, ABC):

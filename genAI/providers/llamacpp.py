@@ -3,19 +3,20 @@ from __future__ import annotations
 from genAI.providers.base import ProviderCapabilities, TextGenerationProvider
 
 
-class MLXProvider(TextGenerationProvider):
+class LlamaCppProvider(TextGenerationProvider):
     def __init__(self, model_name: str) -> None:
         super().__init__(
-            provider_name="mlx",
+            provider_name="llamacpp",
             model_name=model_name,
             capabilities=ProviderCapabilities(text=True),
         )
 
     def generate_text(self, prompt: str, **kwargs: object) -> str:
-        return f"[mlx:{self.model_name}] {prompt}"
+        return f"[llamacpp:{self.model_name}] {prompt}"
 
     def setup_message(self) -> str:
         return (
-            f"MLX can use a local Hugging Face checkpoint for '{self.model_name}'. "
-            "Use `python scripts/download_hf_model.py --provider mlx --model-id <hf-model-id>` to fetch assets."
+            f"llama.cpp expects a local GGUF model for '{self.model_name}'. "
+            "Use `python scripts/download_hf_model.py --provider llamacpp --model-id <hf-model-id>` to download local assets."
         )
+

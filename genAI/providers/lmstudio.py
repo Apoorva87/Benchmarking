@@ -18,3 +18,8 @@ class LMStudioProvider(TextGenerationProvider, VisionLanguageProvider):
         image_count = len(image_paths)
         return f"[lmstudio:{self.model_name}:images={image_count}] {prompt}"
 
+    def setup_message(self) -> str:
+        return (
+            f"LM Studio expects the model '{self.model_name}' to be loaded in the local LM Studio server. "
+            "Start the local server, load the model in LM Studio, and expose its local inference endpoint before benchmarking."
+        )
