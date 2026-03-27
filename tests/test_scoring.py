@@ -1,4 +1,5 @@
 from genAI.runners.evaluator import EvaluationRunner
+from genAI.providers.llamacpp import LlamaCppProvider
 from genAI.scoring.standard import instruction_fidelity_score, keyword_coverage_score, normalized_exact_match_score
 from genAI.suites.basic_qa import BasicQABenchmark
 from genAI.suites.token_generation_speed import TokenGenerationSpeedBenchmark
@@ -61,3 +62,27 @@ def test_speed_benchmark_records_metrics() -> None:
     assert len(results) == 3
     assert results[0].metadata["time_to_first_token_seconds"] == 0.1
     assert results[0].metadata["token_generation_rate"] == 120.0
+
+
+def test_llamacpp_command_uses_hf_repo_for_named_model() -> None:
+    provider = LlamaCppProvider("bartowski/Qwen_Qwen3.5-35B-A3B-GGUF")
+    command = provider._build_command(prompt="hello", max_new_tokens=32)
+    assert "--hf-repo" in command
+    assert "bartowski/Qwen_Qwen3.5-35B-A3B-GGUF" in command
+
+
+def test_llamacpp_timing_parser_extracts_metrics() -> None:
+    provider = LlamaCppProvider("dummy")
+    output = """
+load_backend: loaded BLAS backend
+Hello world
+llama_print_timings: prompt eval time =    2000.00 ms /   20 tokens
+llama_print_timings:        eval time =    5000.00 ms /   50 runs
+llama_print_timings:       total time =    7100.00 ms
+"""
+    metrics = provider._parse_generation_output(prompt="Prompt", output=output)
+    assert metrics.response_text == "Hello world"
+    assert metrics.output_token_count == 50
+    assert round(metrics.time_to_first_token_seconds, 2) == 2.10
+    assert round(metrics.token_generation_rate, 2) == 10.0
+    assert round(metrics.total_duration_seconds, 2) == 7.1

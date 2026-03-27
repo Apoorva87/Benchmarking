@@ -15,6 +15,7 @@ def build_parser() -> argparse.ArgumentParser:
     run_parser.add_argument("--provider", required=True, choices=list_provider_factories())
     run_parser.add_argument("--model", required=True, help="Model name for the provider backend.")
     run_parser.add_argument("--suite", required=True, choices=list_suites())
+    run_parser.add_argument("--max-new-tokens", type=int, default=None, help="Optional override for generation length.")
 
     info_parser = subparsers.add_parser("provider-info", help="Show setup information for a provider.")
     info_parser.add_argument("--provider", required=True, choices=list_provider_factories())
@@ -30,6 +31,11 @@ def main() -> None:
         return
 
     suite = build_suite(args.suite)
+    if args.command == "run" and args.max_new_tokens is not None:
+        original_samples = list(suite.samples())
+        for sample in original_samples:
+            if hasattr(sample, "max_new_tokens"):
+                sample.max_new_tokens = args.max_new_tokens
     results = suite.run(provider)
     aggregate = EvaluationRunner().aggregate(results)
     print(
