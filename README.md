@@ -80,6 +80,12 @@ python scripts/link_lmstudio_model.py \
   --provider llamacpp
 ```
 
+8. Bulk-link all supported LM Studio models into repo-local provider folders:
+
+```bash
+python scripts/link_all_lmstudio_models.py
+```
+
 ## What is implemented now
 
 - Shared benchmark and scoring primitives
@@ -127,6 +133,7 @@ This is a strong complement to speed because a fast provider is only useful if i
 - `ollama` and `lmstudio` typically require a hosted local model endpoint first. Use `python -m genAI.cli provider-info --provider <name> --model <model>` to see the expected setup message.
 - Downloaded model files are stored under the repo-local `models/` directory and ignored by git.
 - If LM Studio already has a model, you can symlink it into the repo-local `models/` tree instead of downloading it again.
+- The bulk linker maps `GGUF` models into `llamacpp/` and `lmstudio/`, and `safetensors` model shards into `mlx/` and `lmstudio/`.
 
 ## Current large-model mappings
 
