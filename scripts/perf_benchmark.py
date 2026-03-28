@@ -173,6 +173,11 @@ def render_summary(result: dict[str, object]) -> str:
         f"cpu_e_cluster_utilization={system_metrics.get('cpu_e_cluster_utilization')}",
         f"cpu_p0_cluster_utilization={system_metrics.get('cpu_p0_cluster_utilization')}",
         f"cpu_p1_cluster_utilization={system_metrics.get('cpu_p1_cluster_utilization')}",
+        f"active_core_count={system_metrics.get('active_core_count')}",
+        f"active_e_core_count={system_metrics.get('active_e_core_count')}",
+        f"active_p_core_count={system_metrics.get('active_p_core_count')}",
+        f"active_core_labels={','.join(system_metrics.get('active_core_labels') or [])}",
+        f"per_core_utilization={_render_per_core_utilization(system_metrics.get('per_core_utilization') or {})}",
         f"gpu_utilization={system_metrics.get('gpu_utilization')}",
         f"cpu_power_watts={system_metrics.get('cpu_power_watts')}",
         f"gpu_power_watts={system_metrics.get('gpu_power_watts')}",
@@ -188,6 +193,13 @@ def render_summary(result: dict[str, object]) -> str:
     if notes:
         lines.append("notes=" + " | ".join(notes))
     return "\n".join(lines)
+
+
+def _render_per_core_utilization(per_core_utilization: dict[str, float]) -> str:
+    if not per_core_utilization:
+        return ""
+    parts = [f"{label}:{utilization:.2f}" for label, utilization in sorted(per_core_utilization.items())]
+    return ",".join(parts)
 
 
 if __name__ == "__main__":

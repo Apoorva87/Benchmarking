@@ -23,6 +23,11 @@ class SystemMetricsSummary:
     cpu_e_cluster_utilization: float | None = None
     cpu_p0_cluster_utilization: float | None = None
     cpu_p1_cluster_utilization: float | None = None
+    active_core_count: int = 0
+    active_e_core_count: int = 0
+    active_p_core_count: int = 0
+    active_core_labels: list[str] = field(default_factory=list)
+    per_core_utilization: dict[str, float] = field(default_factory=dict)
     ram_used_gb: float | None = None
     ram_free_gb: float | None = None
     raw_metrics: dict[str, float] = field(default_factory=dict)
@@ -31,9 +36,10 @@ class SystemMetricsSummary:
 
 
 class PowermetricsCollector:
-    def __init__(self, output_path: Path, sample_rate_ms: int = 1000) -> None:
+    def __init__(self, output_path: Path, sample_rate_ms: int = 1000, active_core_threshold_percent: float = 1.0) -> None:
         self.output_path = output_path
         self.sample_rate_ms = sample_rate_ms
+        self.active_core_threshold_percent = active_core_threshold_percent
         self._process: subprocess.Popen[str] | None = None
 
     def start(self) -> None:
@@ -80,7 +86,11 @@ class PowermetricsCollector:
                 plist = plistlib.loads(payload)
             except Exception:
                 continue
-            summary = _summarize_powermetrics_plist(plist, summary)
+            summary = _summarize_powermetrics_plist(
+                plist,
+                summary,
+                active_core_threshold_percent=self.active_core_threshold_percent,
+            )
             for key, value in _flatten_numeric("", plist).items():
                 flattened[key] = value
         summary.raw_metrics = flattened
@@ -151,7 +161,11 @@ def _find_metric(metrics: dict[str, float], keyword_sets: list[list[str]]) -> fl
     return None
 
 
-def _summarize_powermetrics_plist(plist: dict[str, Any], summary: SystemMetricsSummary) -> SystemMetricsSummary:
+def _summarize_powermetrics_plist(
+    plist: dict[str, Any],
+    summary: SystemMetricsSummary,
+    active_core_threshold_percent: float = 1.0,
+) -> SystemMetricsSummary:
     processor = plist.get("processor", {})
     gpu = plist.get("gpu", {})
 
@@ -163,7 +177,12 @@ def _summarize_powermetrics_plist(plist: dict[str, Any], summary: SystemMetricsS
     summary.gpu_utilization = _utilization_from_idle_ratio(gpu.get("idle_ratio"), summary.gpu_utilization)
 
     cluster_utils: list[float] = []
-    for cluster in processor.get("clusters", []):
+    per_core_utilization: dict[str, float] = {}
+    active_core_labels: list[str] = []
+    active_e_core_count = 0
+    active_p_core_count = 0
+
+    for cluster_index, cluster in enumerate(processor.get("clusters", [])):
         name = str(cluster.get("name", "")).lower()
         utilization = _utilization_from_idle_ratio(cluster.get("idle_ratio"))
         if utilization is not None:
@@ -175,8 +194,27 @@ def _summarize_powermetrics_plist(plist: dict[str, Any], summary: SystemMetricsS
         elif name == "p1-cluster":
             summary.cpu_p1_cluster_utilization = utilization
 
+        cluster_label = _cluster_label(cluster.get("name"), cluster_index)
+        for core_index, cpu in enumerate(cluster.get("cpus", [])):
+            core_utilization = _utilization_from_idle_ratio(cpu.get("idle_ratio"))
+            if core_utilization is None:
+                continue
+            core_label = f"{cluster_label}{core_index}"
+            per_core_utilization[core_label] = core_utilization
+            if core_utilization > active_core_threshold_percent:
+                active_core_labels.append(core_label)
+                if cluster_label == "E":
+                    active_e_core_count += 1
+                else:
+                    active_p_core_count += 1
+
     if cluster_utils:
         summary.cpu_utilization = sum(cluster_utils) / len(cluster_utils)
+    summary.per_core_utilization = per_core_utilization
+    summary.active_core_labels = active_core_labels
+    summary.active_core_count = len(active_core_labels)
+    summary.active_e_core_count = active_e_core_count
+    summary.active_p_core_count = active_p_core_count
 
     flattened = _flatten_numeric("", plist)
     summary.fabric_bandwidth = _find_metric(flattened, [["fabric", "bandwidth"], ["fabric", "bw"]])
@@ -197,3 +235,14 @@ def _coerce_float(value: Any, fallback: float | None = None) -> float | None:
     if isinstance(value, (int, float)):
         return float(value)
     return fallback
+
+
+def _cluster_label(name: Any, fallback_index: int) -> str:
+    normalized = str(name or "").lower()
+    if normalized == "e-cluster":
+        return "E"
+    if normalized == "p0-cluster":
+        return "P0-"
+    if normalized == "p1-cluster":
+        return "P1-"
+    return f"C{fallback_index}-"
