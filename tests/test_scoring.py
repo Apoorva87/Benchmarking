@@ -1,5 +1,6 @@
 from genAI.runners.evaluator import EvaluationRunner
 from genAI.providers.llamacpp import LlamaCppProvider
+from genAI.providers.mlx import MLXProvider
 from genAI.scoring.standard import instruction_fidelity_score, keyword_coverage_score, normalized_exact_match_score
 from genAI.suites.basic_qa import BasicQABenchmark
 from genAI.suites.token_generation_speed import TokenGenerationSpeedBenchmark
@@ -86,3 +87,28 @@ llama_print_timings:       total time =    7100.00 ms
     assert round(metrics.time_to_first_token_seconds, 2) == 2.10
     assert round(metrics.token_generation_rate, 2) == 10.0
     assert round(metrics.total_duration_seconds, 2) == 7.1
+
+
+def test_mlx_command_uses_python311_runtime() -> None:
+    provider = MLXProvider("/tmp/test-model")
+    command = provider._build_command(prompt="hello", max_new_tokens=16)
+    assert command[:3] == [".venv311/bin/python", "-m", "mlx_lm.generate"]
+    assert "/tmp/test-model" in command
+
+
+def test_mlx_parser_extracts_metrics() -> None:
+    provider = MLXProvider("dummy")
+    output = """
+Calling `python -m mlx_lm.generate...` directly is deprecated.
+==========
+hello there
+==========
+Prompt: 11 tokens, 11.400 tokens-per-sec
+Generation: 16 tokens, 71.126 tokens-per-sec
+Peak memory: 24.369 GB
+"""
+    metrics = provider._parse_generation_output(prompt="hi", output=output)
+    assert metrics.response_text == "hello there"
+    assert metrics.output_token_count == 16
+    assert round(metrics.token_generation_rate, 3) == 71.126
+    assert round(metrics.time_to_first_token_seconds, 3) == round(11 / 11.4, 3)
