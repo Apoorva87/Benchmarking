@@ -11,6 +11,14 @@ DEFAULT_LMSTUDIO_DIR = Path.home() / ".lmstudio" / "models"
 
 GGUF_SUFFIXES = {".gguf"}
 MLX_SUFFIXES = {".safetensors"}
+MLX_SIDECAR_NAMES = {
+    "config.json",
+    "generation_config.json",
+    "model.safetensors.index.json",
+    "tokenizer.json",
+    "tokenizer_config.json",
+    "chat_template.jinja",
+}
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -33,6 +41,8 @@ def ensure_symlink(source: Path, target: Path) -> str:
 
 
 def provider_targets_for_file(source: Path) -> list[str]:
+    if source.name in MLX_SIDECAR_NAMES:
+        return ["mlx", "lmstudio"]
     suffix = source.suffix.lower()
     if suffix in GGUF_SUFFIXES:
         return ["llamacpp", "lmstudio"]

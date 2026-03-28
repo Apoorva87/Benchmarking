@@ -3,6 +3,7 @@ __pycache__/
 .coverage
 .DS_Store
 .venv/
+.venv311/
 dist/
 build/
 *.pyc
