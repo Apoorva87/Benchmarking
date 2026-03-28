@@ -72,6 +72,14 @@ cat genAI/data/model_manifest.json
 python scripts/download_hf_model.py --provider llamacpp --model-id bartowski/Qwen_Qwen3.5-35B-A3B-GGUF
 ```
 
+7. Reuse already-downloaded LM Studio models without duplicating them:
+
+```bash
+python scripts/link_lmstudio_model.py \
+  --source ~/.lmstudio/models/lmstudio-community/Qwen3.5-35B-A3B-GGUF/Qwen3.5-35B-A3B-Q4_K_M.gguf \
+  --provider llamacpp
+```
+
 ## What is implemented now
 
 - Shared benchmark and scoring primitives
@@ -118,6 +126,7 @@ This is a strong complement to speed because a fast provider is only useful if i
 - `mlx`, `jax`, and `llama.cpp` can use the helper scripts in `scripts/` to pull Hugging Face assets locally.
 - `ollama` and `lmstudio` typically require a hosted local model endpoint first. Use `python -m genAI.cli provider-info --provider <name> --model <model>` to see the expected setup message.
 - Downloaded model files are stored under the repo-local `models/` directory and ignored by git.
+- If LM Studio already has a model, you can symlink it into the repo-local `models/` tree instead of downloading it again.
 
 ## Current large-model mappings
 
