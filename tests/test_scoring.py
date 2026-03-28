@@ -1,6 +1,7 @@
 from genAI.runners.evaluator import EvaluationRunner
 from genAI.providers.llamacpp import LlamaCppProvider
 from genAI.providers.mlx import MLXProvider
+from genAI.providers.ollama import OllamaProvider
 from genAI.scoring.standard import instruction_fidelity_score, keyword_coverage_score, normalized_exact_match_score
 from genAI.suites.basic_qa import BasicQABenchmark
 from genAI.suites.token_generation_speed import TokenGenerationSpeedBenchmark
@@ -112,3 +113,22 @@ Peak memory: 24.369 GB
     assert metrics.output_token_count == 16
     assert round(metrics.token_generation_rate, 3) == 71.126
     assert round(metrics.time_to_first_token_seconds, 3) == round(11 / 11.4, 3)
+
+
+def test_ollama_parser_extracts_metrics() -> None:
+    provider = OllamaProvider("glm-4.7-flash:latest")
+    data = {
+        "response": "Hello, how are you today?",
+        "thinking": "hidden chain",
+        "total_duration": 10866166666,
+        "load_duration": 5632563666,
+        "prompt_eval_count": 11,
+        "prompt_eval_duration": 561699708,
+        "eval_count": 329,
+        "eval_duration": 4569778876,
+    }
+    metrics = provider._parse_generation_response(prompt="Say hello", data=data)
+    assert metrics.response_text == "Hello, how are you today?"
+    assert metrics.output_token_count == 329
+    assert round(metrics.token_generation_rate, 3) == round(329 / (4569778876 / 1_000_000_000), 3)
+    assert any("thinking" in note.lower() for note in metrics.metric_notes)
