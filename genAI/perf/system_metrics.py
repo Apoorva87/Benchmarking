@@ -15,6 +15,14 @@ class SystemMetricsSummary:
     fabric_bandwidth: float | None = None
     cache_bandwidth: float | None = None
     memory_bandwidth: float | None = None
+    cpu_power_watts: float | None = None
+    gpu_power_watts: float | None = None
+    ane_power_watts: float | None = None
+    total_power_watts: float | None = None
+    thermal_pressure: str | None = None
+    cpu_e_cluster_utilization: float | None = None
+    cpu_p0_cluster_utilization: float | None = None
+    cpu_p1_cluster_utilization: float | None = None
     ram_used_gb: float | None = None
     ram_free_gb: float | None = None
     raw_metrics: dict[str, float] = field(default_factory=dict)
@@ -72,16 +80,17 @@ class PowermetricsCollector:
                 plist = plistlib.loads(payload)
             except Exception:
                 continue
+            summary = _summarize_powermetrics_plist(plist, summary)
             for key, value in _flatten_numeric("", plist).items():
                 flattened[key] = value
         summary.raw_metrics = flattened
-        summary.cpu_utilization = _find_metric(flattened, [["cpu", "util"], ["cpu", "duty"], ["cpu", "active"]])
-        summary.gpu_utilization = _find_metric(flattened, [["gpu", "util"], ["gpu", "duty"], ["gpu", "active"]])
-        summary.fabric_bandwidth = _find_metric(flattened, [["fabric", "bandwidth"], ["fabric", "bw"]])
-        summary.cache_bandwidth = _find_metric(flattened, [["cache", "bandwidth"], ["cache", "bw"]])
-        summary.memory_bandwidth = _find_metric(flattened, [["dram", "bandwidth"], ["memory", "bandwidth"], ["dram", "bw"]])
         if not flattened:
             summary.notes.append("No numeric powermetrics fields were parsed from the plist output.")
+        if summary.fabric_bandwidth is None or summary.cache_bandwidth is None or summary.memory_bandwidth is None:
+            summary.notes.append(
+                "Current powermetrics samplers did not expose fabric/cache/memory bandwidth counters; "
+                "use additional samplers if you want those fields."
+            )
         return summary
 
 
@@ -141,3 +150,50 @@ def _find_metric(metrics: dict[str, float], keyword_sets: list[list[str]]) -> fl
                 return value
     return None
 
+
+def _summarize_powermetrics_plist(plist: dict[str, Any], summary: SystemMetricsSummary) -> SystemMetricsSummary:
+    processor = plist.get("processor", {})
+    gpu = plist.get("gpu", {})
+
+    summary.cpu_power_watts = _coerce_float(processor.get("cpu_power"), summary.cpu_power_watts)
+    summary.gpu_power_watts = _coerce_float(processor.get("gpu_power"), summary.gpu_power_watts)
+    summary.ane_power_watts = _coerce_float(processor.get("ane_power"), summary.ane_power_watts)
+    summary.total_power_watts = _coerce_float(processor.get("combined_power"), summary.total_power_watts)
+    summary.thermal_pressure = plist.get("thermal_pressure") or summary.thermal_pressure
+    summary.gpu_utilization = _utilization_from_idle_ratio(gpu.get("idle_ratio"), summary.gpu_utilization)
+
+    cluster_utils: list[float] = []
+    for cluster in processor.get("clusters", []):
+        name = str(cluster.get("name", "")).lower()
+        utilization = _utilization_from_idle_ratio(cluster.get("idle_ratio"))
+        if utilization is not None:
+            cluster_utils.append(utilization)
+        if name == "e-cluster":
+            summary.cpu_e_cluster_utilization = utilization
+        elif name == "p0-cluster":
+            summary.cpu_p0_cluster_utilization = utilization
+        elif name == "p1-cluster":
+            summary.cpu_p1_cluster_utilization = utilization
+
+    if cluster_utils:
+        summary.cpu_utilization = sum(cluster_utils) / len(cluster_utils)
+
+    flattened = _flatten_numeric("", plist)
+    summary.fabric_bandwidth = _find_metric(flattened, [["fabric", "bandwidth"], ["fabric", "bw"]])
+    summary.cache_bandwidth = _find_metric(flattened, [["cache", "bandwidth"], ["cache", "bw"]])
+    summary.memory_bandwidth = _find_metric(flattened, [["dram", "bandwidth"], ["memory", "bandwidth"], ["dram", "bw"]])
+    return summary
+
+
+def _utilization_from_idle_ratio(idle_ratio: Any, fallback: float | None = None) -> float | None:
+    idle = _coerce_float(idle_ratio)
+    if idle is None:
+        return fallback
+    utilization = max(0.0, min(1.0, 1.0 - idle))
+    return utilization * 100.0
+
+
+def _coerce_float(value: Any, fallback: float | None = None) -> float | None:
+    if isinstance(value, (int, float)):
+        return float(value)
+    return fallback
