@@ -1,0 +1,1 @@
+You are helping evaluate local inference engines. Summarize the tradeoffs between latency, throughput, accuracy, reproducibility, memory pressure, warmup effects, and operational simplicity in a concise but precise way. Keep the answer factual, organized, and useful for an engineer comparing providers.

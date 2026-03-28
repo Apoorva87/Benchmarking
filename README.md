@@ -86,6 +86,12 @@ python scripts/link_lmstudio_model.py \
 python scripts/link_all_lmstudio_models.py
 ```
 
+9. Launch the interactive performance benchmark tool:
+
+```bash
+./scripts/run_perf_benchmark.sh
+```
+
 ## What is implemented now
 
 - Shared benchmark and scoring primitives
@@ -126,6 +132,13 @@ This category checks whether a provider follows constraints reliably, such as:
 - maximum word count or response shape constraints
 
 This is a strong complement to speed because a fast provider is only useful if it also follows the prompt correctly.
+
+## Performance Tooling
+
+- `scripts/run_perf_benchmark.sh` is the interactive shell entrypoint.
+- `scripts/perf_benchmark.py` contains the modular benchmark runner, inventory discovery, prompt loading, and system metrics collection.
+- Static prompts live under `genAI/data/perf_prompts/` so runs stay reproducible and do not regenerate prompt text every time.
+- `powermetrics` collection requires `sudo` and is designed to be optional.
 
 ## Provider setup notes
 
